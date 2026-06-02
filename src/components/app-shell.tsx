@@ -64,6 +64,21 @@ const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
   { id: "admin", label: "Admin", icon: Settings },
 ];
 
+function formatCurrencyShort(value: unknown) {
+  const amount = Number(Array.isArray(value) ? value[0] : value);
+  if (!Number.isFinite(amount)) return String(value);
+
+  if (Math.abs(amount) >= 1_000_000) {
+    return `$${(amount / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+
+  if (Math.abs(amount) >= 1_000) {
+    return `$${Math.round(amount / 1_000)}K`;
+  }
+
+  return `$${amount.toLocaleString("en-US")}`;
+}
+
 export function AppShell({ user }: { user: SessionUser }) {
   const [active, setActive] = useState<Tab>(user.role === "ops" ? "operations" : "executive");
   const [health, setHealth] = useState<Health | null>(null);
@@ -150,8 +165,8 @@ function Executive() {
               <AreaChart data={revenueTrend}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e7e2da" />
                 <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
+                <YAxis tickFormatter={formatCurrencyShort} />
+                <Tooltip formatter={(value) => formatCurrencyShort(value)} />
                 <Area type="monotone" dataKey="revenue" stroke="#ff4a13" fill="#ff4a1328" name="Revenue" />
                 <Area type="monotone" dataKey="collected" stroke="#07996f" fill="#07996f20" name="Collected" />
               </AreaChart>
@@ -185,8 +200,8 @@ function Executive() {
               <BarChart data={serviceLines}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e7e2da" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis />
-                <Tooltip />
+                <YAxis tickFormatter={formatCurrencyShort} />
+                <Tooltip formatter={(value) => formatCurrencyShort(value)} />
                 <Bar dataKey="revenue" fill="#151923" name="Revenue" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
