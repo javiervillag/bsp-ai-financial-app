@@ -4,33 +4,31 @@ import { demoCredentials } from "@/lib/demo-data";
 export default function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   return (
     <main className="min-h-screen bg-[#f7f3ed] text-[#151923]">
-      <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-10">
-        <section className="grid w-full gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-12">
+        <section className="grid w-full gap-10 lg:grid-cols-[1.08fr_0.92fr]">
           <div className="flex flex-col justify-center">
-            <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#151923] text-lg font-black text-[#ff4a13]">
-                B
+            <div className="mb-8">
+              <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-[#e6ded1] bg-white/75 px-4 py-2 shadow-sm">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#ff4a13]" />
+                <span className="text-xs font-bold uppercase tracking-[0.24em] text-[#ff4a13]">Barker & Sons AI</span>
               </div>
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[#ff4a13]">Barker AI</p>
-                <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">
-                  Financial intelligence for closeout, cash, and payroll readiness.
-                </h1>
-              </div>
+              <h1 className="max-w-3xl text-4xl font-semibold leading-[1.02] tracking-tight md:text-6xl">
+                Financial intelligence for closeout, cash, and payroll readiness.
+              </h1>
             </div>
             <p className="max-w-2xl text-lg leading-8 text-[#626676]">
               A Volca-inspired command center built around Barker and Sons&apos; ServiceTitan closeout workflow, service-manager review bottleneck, and payment follow-up risk.
             </p>
             <div className="mt-10 grid gap-3 sm:grid-cols-3">
               {["ServiceTitan context", "AI exception review", "Role-based views"].map((item) => (
-                <div key={item} className="rounded-lg border border-[#ded8cf] bg-white/80 p-4 text-sm font-semibold">
+                <div key={item} className="rounded-md border border-[#ded8cf] bg-white/80 p-4 text-sm font-semibold shadow-sm">
                   {item}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="rounded-lg border border-[#ded8cf] bg-white p-6 shadow-sm">
+          <div className="rounded-lg border border-[#ded8cf] bg-white p-6 shadow-md shadow-[#1519230d]">
             <div className="mb-6">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#777b87]">Sign in</p>
               <h2 className="mt-2 text-2xl font-semibold">Open Barker AI</h2>

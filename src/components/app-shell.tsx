@@ -12,6 +12,7 @@ import {
   Layers3,
   LineChart,
   Lock,
+  LogOut,
   RefreshCcw,
   Send,
   Settings,
@@ -83,20 +84,28 @@ export function AppShell({ user }: { user: SessionUser }) {
 
   return (
     <div className="mx-auto max-w-[1480px] px-4 py-5 md:px-6">
-      <header className="mb-5 flex flex-col gap-4 rounded-lg border border-[#ddd6cb] bg-white px-4 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <header className="mb-5 flex flex-col gap-4 rounded-lg border border-[#ddd6cb] bg-white px-4 py-4 shadow-sm xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#151923] text-xl font-black text-[#ff4a13]">B</div>
+          <div className="h-11 w-1 rounded-full bg-[#ff4a13]" />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff4a13]">Barker AI</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#ff4a13]">Barker & Sons AI</p>
             <h1 className="text-2xl font-semibold tracking-tight">Financial Intelligence Command Center</h1>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Badge icon={ShieldCheck} text={health?.checks.authSecret ? "Production auth" : "Auth needs secret"} tone={health?.checks.authSecret ? "green" : "red"} />
           <Badge icon={Sparkles} text={health?.checks.openAiKey ? `OpenAI ${health.checks.openAiModel}` : "OpenAI key missing"} tone={health?.checks.openAiKey ? "green" : "red"} />
-          <div className="rounded-md border border-[#e5e0d8] px-3 py-2 text-sm">
-            <span className="font-semibold">{user.name}</span>
-            <span className="ml-2 text-[#6b707c]">{user.title}</span>
+          <div className="flex items-center gap-3 rounded-md border border-[#e5e0d8] bg-[#fbfaf7] px-3 py-2 text-sm">
+            <div className="min-w-0">
+              <p className="font-semibold leading-5">{user.name}</p>
+              <p className="text-xs leading-4 text-[#6b707c]">{user.title}</p>
+            </div>
+            <form action="/api/logout" method="post">
+              <button className="inline-flex h-8 items-center gap-2 rounded-md border border-[#ddd6cb] bg-white px-3 text-xs font-semibold text-[#4d5160] transition hover:border-[#ff4a13] hover:text-[#151923]">
+                <LogOut size={14} />
+                Sign out
+              </button>
+            </form>
           </div>
         </div>
       </header>
