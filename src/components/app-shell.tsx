@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type React from "react";
 import {
   AlertTriangle,
@@ -44,6 +44,16 @@ import {
 
 type Tab = "executive" | "operations" | "ai" | "reports" | "integrations" | "admin";
 
+type Health = {
+  ok: boolean;
+  checks: {
+    authSecret: boolean;
+    databaseUrl: boolean;
+    openAiKey: boolean;
+    openAiModel: string;
+  };
+};
+
 const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
   { id: "executive", label: "Executive", icon: BarChart3 },
   { id: "operations", label: "Operations", icon: ClipboardCheck },
@@ -55,6 +65,7 @@ const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
 
 export function AppShell({ user }: { user: SessionUser }) {
   const [active, setActive] = useState<Tab>(user.role === "ops" ? "operations" : "executive");
+  const [health, setHealth] = useState<Health | null>(null);
   const allowed = useMemo(() => {
     if (user.role === "admin") return new Set<Tab>(tabs.map((tab) => tab.id));
     if (user.role === "executive") return new Set<Tab>(["executive", "operations", "ai", "reports", "integrations"]);
@@ -62,6 +73,13 @@ export function AppShell({ user }: { user: SessionUser }) {
   }, [user.role]);
 
   const visibleTabs = tabs.filter((tab) => allowed.has(tab.id));
+
+  useEffect(() => {
+    fetch("/api/health")
+      .then((response) => response.json())
+      .then(setHealth)
+      .catch(() => setHealth(null));
+  }, []);
 
   return (
     <div className="mx-auto max-w-[1480px] px-4 py-5 md:px-6">
@@ -74,8 +92,8 @@ export function AppShell({ user }: { user: SessionUser }) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Badge icon={ShieldCheck} text="Production auth" tone="green" />
-          <Badge icon={Sparkles} text="OpenAI required" tone="orange" />
+          <Badge icon={ShieldCheck} text={health?.checks.authSecret ? "Production auth" : "Auth needs secret"} tone={health?.checks.authSecret ? "green" : "red"} />
+          <Badge icon={Sparkles} text={health?.checks.openAiKey ? `OpenAI ${health.checks.openAiModel}` : "OpenAI key missing"} tone={health?.checks.openAiKey ? "green" : "red"} />
           <div className="rounded-md border border-[#e5e0d8] px-3 py-2 text-sm">
             <span className="font-semibold">{user.name}</span>
             <span className="ml-2 text-[#6b707c]">{user.title}</span>
@@ -102,8 +120,8 @@ export function AppShell({ user }: { user: SessionUser }) {
       {active === "operations" && <Operations />}
       {active === "ai" && <AiAnalyst />}
       {active === "reports" && <Reports />}
-      {active === "integrations" && <Integrations />}
-      {active === "admin" && <Admin />}
+      {active === "integrations" && <Integrations health={health} />}
+      {active === "admin" && <Admin health={health} />}
     </div>
   );
 }
@@ -309,10 +327,16 @@ function Reports() {
   );
 }
 
-function Integrations() {
+function Integrations({ health }: { health: Health | null }) {
+  const liveIntegrations = integrations.map((item) =>
+    item.name === "Accounting" && health?.checks.databaseUrl
+      ? { ...item, status: "Database ready", detail: "Railway Postgres is configured for production data persistence" }
+      : item,
+  );
+
   return (
     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      {integrations.map((item) => (
+      {liveIntegrations.map((item) => (
         <div key={item.name} className="rounded-lg border border-[#ddd6cb] bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -328,7 +352,7 @@ function Integrations() {
   );
 }
 
-function Admin() {
+function Admin({ health }: { health: Health | null }) {
   return (
     <section className="grid gap-5 lg:grid-cols-2">
       <Panel title="Security and Roles" eyebrow="Production-oriented controls">
@@ -357,6 +381,17 @@ function Admin() {
               </button>
             );
           })}
+        </div>
+      </Panel>
+      <Panel title="Runtime Health" eyebrow="Live deployment readiness">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Status label="Auth secret" value={health?.checks.authSecret ? 1 : 0} tone={health?.checks.authSecret ? "green" : "red"} />
+          <Status label="Database" value={health?.checks.databaseUrl ? 1 : 0} tone={health?.checks.databaseUrl ? "green" : "red"} />
+          <Status label="OpenAI key" value={health?.checks.openAiKey ? 1 : 0} tone={health?.checks.openAiKey ? "green" : "red"} />
+          <div className="rounded-md bg-[#f4f1eb] px-3 py-2 text-center">
+            <div className="text-xl font-semibold">{health?.checks.openAiModel || "gpt-4.1"}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5f6470]">AI model</div>
+          </div>
         </div>
       </Panel>
     </section>

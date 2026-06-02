@@ -1,5 +1,5 @@
 import { loginAction } from "@/app/actions";
-import { demoUsers } from "@/lib/demo-data";
+import { demoCredentials } from "@/lib/demo-data";
 
 export default function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   return (
@@ -63,9 +63,9 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<{ er
             </form>
             <div className="mt-8 space-y-3">
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#777b87]">Demo accounts</p>
-              {demoUsers.map((user) => (
+              {demoCredentials.map((user) => (
                 <div key={user.email} className="rounded-md border border-[#ece8e1] bg-[#fbfaf7] p-3 text-sm">
-                  <div className="font-semibold">{user.name} · {user.role}</div>
+                  <div className="font-semibold">{user.label} · {user.role}</div>
                   <div className="text-[#686d7a]">{user.email}</div>
                   <div className="text-[#686d7a]">{user.password}</div>
                 </div>

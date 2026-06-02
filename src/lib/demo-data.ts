@@ -2,7 +2,6 @@ export type Role = "admin" | "executive" | "ops";
 
 export type DemoUser = {
   email: string;
-  password: string;
   name: string;
   role: Role;
   title: string;
@@ -11,25 +10,28 @@ export type DemoUser = {
 export const demoUsers: DemoUser[] = [
   {
     email: "admin@barker-ai.local",
-    password: "BarkerAdmin!2026",
     name: "Barker Admin",
     role: "admin",
     title: "System administrator",
   },
   {
     email: "brenda@barker-ai.local",
-    password: "BarkerExec!2026",
     name: "Brenda Barker",
     role: "executive",
     title: "Executive leadership",
   },
   {
     email: "cat@barker-ai.local",
-    password: "BarkerOps!2026",
     name: "Cat Gutierrez",
     role: "ops",
     title: "Finance and operations",
   },
+];
+
+export const demoCredentials = [
+  { email: "admin@barker-ai.local", password: "BarkerAdmin!2026", label: "Barker Admin", role: "admin" },
+  { email: "brenda@barker-ai.local", password: "BarkerExec!2026", label: "Brenda Barker", role: "executive" },
+  { email: "cat@barker-ai.local", password: "BarkerOps!2026", label: "Cat Gutierrez", role: "ops" },
 ];
 
 export const kpis = [
