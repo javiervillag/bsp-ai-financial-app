@@ -66,6 +66,59 @@ export const reviewQueues = [
   { lane: "Payroll review", ready: 135, pending: 12, blocked: 7, owner: "Payroll" },
 ];
 
+export const payrollRun = {
+  period: "Payroll Friday · Week 23",
+  scannedInvoices: 412,
+  scannedTimecards: 68,
+  employees: 47,
+  grossPay: "$184,302",
+  payrollReady: 91,
+  blockers: 23,
+  estimatedLeakPrevented: "$10,400",
+  exportTarget: "ADP / Paycom file",
+};
+
+export const payrollRules = [
+  { rule: "Drain commission", logic: "8% of collected revenue when GP is 55%+", status: "Encoded", owner: "Payroll" },
+  { rule: "Helper split", logic: "70 / 30 split when helper tag is present", status: "Encoded", owner: "Service managers" },
+  { rule: "SPIFFs", logic: "$15 per approved add-on, blocked if invoice summary is missing", status: "Needs review", owner: "Cat" },
+  { rule: "Payroll gate", logic: "No payout when payment path, photos, or manager review is unresolved", status: "Encoded", owner: "Rick" },
+];
+
+export const payrollChecks = [
+  { step: "Ingest", detail: "ServiceTitan invoices, jobs, photos, tags, business units, payments, and timecards", status: "412 invoices scanned" },
+  { step: "Encode", detail: "Barker pay rules, helper splits, GP gates, SPIFFs, and closeout gates", status: "4 rule groups active" },
+  { step: "Run", detail: "Payroll math calculated and anomalies routed to the right owner", status: "23 exceptions" },
+  { step: "Export", detail: "Payroll-ready file prepared after exception approval", status: "Staged for payroll" },
+];
+
+export const payrollExceptions = [
+  {
+    tech: "Ray M.",
+    job: "JOB-74219",
+    payImpact: "$386",
+    issue: "Commission blocked until payment path is confirmed",
+    rule: "Payroll gate",
+    owner: "Rick",
+  },
+  {
+    tech: "Austin B.",
+    job: "JOB-74280",
+    payImpact: "$261",
+    issue: "Net-15 receipt not confirmed before cutoff",
+    rule: "Payment evidence",
+    owner: "Cat",
+  },
+  {
+    tech: "Camera team",
+    job: "JOB-74302",
+    payImpact: "$612",
+    issue: "Helper split needs manager approval after business-unit correction",
+    rule: "Helper split",
+    owner: "Service manager",
+  },
+];
+
 export const exceptions = [
   {
     id: "JOB-74219",
@@ -131,7 +184,7 @@ export const integrations = [
   { name: "ServiceTitan", status: "Demo connected", detail: "Jobs, invoices, tags, photos, payments" },
   { name: "Slack", status: "Demo connected", detail: "Exception notifications and owner follow-up" },
   { name: "Broccoli + phone intake", status: "Mapped", detail: "Lead source and booking context" },
-  { name: "Payroll provider", status: "Future", detail: "Clean payroll readiness export" },
+  { name: "Payroll provider", status: "Demo staged", detail: "Payroll-ready ADP / Paycom export after blocker approval" },
   { name: "Accounting", status: "Future", detail: "Open balances, job costs, and GL sync" },
   { name: "CXE / coaching", status: "Future", detail: "Technician coaching adoption and call insights" },
 ];
@@ -143,5 +196,9 @@ export const aiContext = {
   serviceLines,
   reviewQueues,
   exceptions,
+  payrollRun,
+  payrollRules,
+  payrollChecks,
+  payrollExceptions,
   rules: agentRules,
 };

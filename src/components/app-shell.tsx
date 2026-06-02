@@ -38,12 +38,16 @@ import {
   exceptions,
   integrations,
   kpis,
+  payrollChecks,
+  payrollExceptions,
+  payrollRules,
+  payrollRun,
   revenueTrend,
   reviewQueues,
   serviceLines,
 } from "@/lib/demo-data";
 
-type Tab = "executive" | "operations" | "ai" | "reports" | "integrations" | "admin";
+type Tab = "executive" | "operations" | "payroll" | "ai" | "reports" | "integrations" | "admin";
 
 type Health = {
   ok: boolean;
@@ -58,6 +62,7 @@ type Health = {
 const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
   { id: "executive", label: "Executive", icon: BarChart3 },
   { id: "operations", label: "Operations", icon: ClipboardCheck },
+  { id: "payroll", label: "Payroll Automation", icon: SlidersHorizontal },
   { id: "ai", label: "AI Analyst", icon: Bot },
   { id: "reports", label: "Reports", icon: LineChart },
   { id: "integrations", label: "Integrations", icon: DatabaseZap },
@@ -84,8 +89,8 @@ export function AppShell({ user }: { user: SessionUser }) {
   const [health, setHealth] = useState<Health | null>(null);
   const allowed = useMemo(() => {
     if (user.role === "admin") return new Set<Tab>(tabs.map((tab) => tab.id));
-    if (user.role === "executive") return new Set<Tab>(["executive", "operations", "ai", "reports", "integrations"]);
-    return new Set<Tab>(["operations", "ai", "reports", "integrations"]);
+    if (user.role === "executive") return new Set<Tab>(["executive", "operations", "payroll", "ai", "reports", "integrations"]);
+    return new Set<Tab>(["operations", "payroll", "ai", "reports", "integrations"]);
   }, [user.role]);
 
   const visibleTabs = tabs.filter((tab) => allowed.has(tab.id));
@@ -142,6 +147,7 @@ export function AppShell({ user }: { user: SessionUser }) {
 
       {active === "executive" && <Executive />}
       {active === "operations" && <Operations />}
+      {active === "payroll" && <PayrollAutomation />}
       {active === "ai" && <AiAnalyst />}
       {active === "reports" && <Reports />}
       {active === "integrations" && <Integrations health={health} />}
@@ -291,6 +297,99 @@ function Operations() {
   );
 }
 
+function PayrollAutomation() {
+  return (
+    <section className="space-y-5">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+        <Kpi label="Invoices scanned" value={String(payrollRun.scannedInvoices)} detail="ServiceTitan jobs + invoices" tone="good" />
+        <Kpi label="Timecards scanned" value={String(payrollRun.scannedTimecards)} detail="Matched to completed jobs" tone="good" />
+        <Kpi label="Employees in run" value={String(payrollRun.employees)} detail={payrollRun.period} tone="good" />
+        <Kpi label="Gross pay staged" value={payrollRun.grossPay} detail={payrollRun.exportTarget} tone="warn" />
+        <Kpi label="Payroll ready" value={`${payrollRun.payrollReady}%`} detail={`${payrollRun.blockers} blockers before export`} tone="warn" />
+        <Kpi label="Leak prevented" value={payrollRun.estimatedLeakPrevented} detail="Anomalies caught pre-check" tone="good" />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[0.95fr_1.05fr]">
+        <Panel title="Payroll Agent Workflow" eyebrow="Volca-style run for Barker">
+          <div className="space-y-3">
+            {payrollChecks.map((item, index) => (
+              <div key={item.step} className="grid gap-3 rounded-lg border border-[#e5e0d8] bg-[#fbfaf7] p-4 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+                <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#151923] text-sm font-semibold text-white">
+                  {index + 1}
+                </div>
+                <div>
+                  <h3 className="font-semibold">{item.step}</h3>
+                  <p className="text-sm leading-6 text-[#626774]">{item.detail}</p>
+                </div>
+                <span className="rounded-full bg-[#fff1e9] px-3 py-1 text-xs font-semibold text-[#d1460c]">{item.status}</span>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Pay Rules Encoded" eyebrow="Barker-specific logic">
+          <div className="space-y-3">
+            {payrollRules.map((item) => (
+              <div key={item.rule} className="rounded-lg border border-[#e5e0d8] bg-white p-4">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-semibold">{item.rule}</h3>
+                  <Badge icon={CheckCircle2} text={`${item.status} · ${item.owner}`} tone={item.status === "Encoded" ? "green" : "orange"} />
+                </div>
+                <p className="text-sm leading-6 text-[#626774]">{item.logic}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+        <Panel title="Payroll Exception Review" eyebrow="The human approval step">
+          <div className="space-y-3">
+            {payrollExceptions.map((item) => (
+              <div key={item.job} className="grid gap-3 rounded-lg border border-[#ffd5c8] bg-[#fff7f4] p-4 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div>
+                  <div className="mb-1 flex flex-wrap items-center gap-2">
+                    <h3 className="font-semibold">{item.tech}</h3>
+                    <span className="text-sm font-medium text-[#6c717d]">{item.job}</span>
+                    <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold text-[#c82706]">{item.payImpact} impact</span>
+                  </div>
+                  <p className="text-sm font-semibold">{item.issue}</p>
+                  <p className="mt-1 text-sm text-[#626774]">{item.rule} · Owner: {item.owner}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button className="rounded-md border border-[#dcd7ce] bg-white px-3 py-2 text-sm font-semibold hover:border-[#ff4a13]">Review</button>
+                  <button className="rounded-md bg-[#151923] px-3 py-2 text-sm font-semibold text-white">Approve</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Payroll Export Readiness" eyebrow="No spreadsheet middle step">
+          <div className="space-y-4 text-sm leading-6 text-[#535866]">
+            <p>
+              The run is staged from Barker&apos;s ServiceTitan closeout data. Export stays locked until payroll blockers are approved, payment evidence is complete, and manager review exceptions are cleared.
+            </p>
+            <div className="rounded-lg border border-[#e5e0d8] bg-[#fbfaf7] p-4">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-semibold">Payroll-ready file</span>
+                <span className="text-[#b45f00]">{payrollRun.blockers} blockers</span>
+              </div>
+              <div className="h-3 overflow-hidden rounded-full bg-[#ece8e1]">
+                <div className="h-full rounded-full bg-[#07996f]" style={{ width: `${payrollRun.payrollReady}%` }} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button className="rounded-md border border-[#dcd7ce] px-3 py-2 font-semibold hover:border-[#ff4a13]">Recalculate</button>
+              <button className="rounded-md bg-[#ff4a13] px-3 py-2 font-semibold text-white">Stage export</button>
+            </div>
+          </div>
+        </Panel>
+      </div>
+    </section>
+  );
+}
+
 function AiAnalyst() {
   const [message, setMessage] = useState("What should Barker leadership inspect before payroll Friday?");
   const [answer, setAnswer] = useState("");
@@ -338,7 +437,7 @@ function Reports() {
     <section className="grid gap-5 lg:grid-cols-2">
       {[
         ["Executive Brief", "Revenue is strong, but open-balance exposure and service-manager review backlog are the main constraints this week."],
-        ["Payroll Readiness", "91% ready. High-severity blockers are mostly missing payment path confirmation and overdue second review."],
+        ["Payroll Automation", "412 invoices and 68 timecards scanned. The payroll file is staged at 91% readiness with 23 rule or evidence blockers left."],
         ["Closeout Exceptions", "Completed job exception rate is 14.6%, above the target of 8%. Dispatch closeout quality is improving but inconsistent."],
         ["Collections Risk", "$62K in open balance risk. Net-15 receipt confirmation and financing routing are the top follow-up causes."],
       ].map(([title, copy]) => (
